@@ -45,11 +45,15 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 		return;
 	}
 
+	int chunkSize = *(int*)ptr;
+
 	if (isAllocated) {
 		*(int*)ptr |= (1 << 31);
+		*(int*)((char*)ptr + chunkSize) |= (1 << 31);
 	}
 	else {
 		*(int*)ptr |= 0;
+		*(int*)((char*)ptr + chunkSize) |= 0;
 	}
 }
 
