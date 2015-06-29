@@ -30,13 +30,15 @@ int main(){
 	bitset<8> s(q);
 	cout << s << endl;
 
-	short* p = (short*)ptr;
-	*p = ~(1 << 15);
+	char* p = (char*)ptr;
+	p += 1;
+	*(short*)p = 0;
 	bitset<16> e(*p);
 	cout << e << endl;
 
 	bitset<32> t(*(int*)ptr);
 	cout << t << endl;
+
 
 	VirtualFree(ptr, 100, MEM_RELEASE);
 

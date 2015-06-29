@@ -16,13 +16,13 @@ private:
 	void setAllocated(void* ptr, char isAllocated = 1);
 
 	/* merge free chunks together
-	* l and r must points to valid address (must point to a valid headert )
+	* l and r must points to valid address (must point to a valid headers)
 	*/
 	void mergeChunks(void* l, void* r);
 
 	/* return size of the chunk
 	*/
-	unsigned int getSize(void* ptr);
+	unsigned int chunkSize(void* ptr);
 
 	void* memoryPool;
 	size_t poolSize;

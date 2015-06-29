@@ -12,7 +12,8 @@ MemAllocator::MemAllocator() {
 		throw std::exception("Failed to allocate memory");
 	}
 
-
+	setSize(memoryPool, poolSize - 2 * sizeof(unsigned int));
+	setAllocated(memoryPool, 0);
 
 }
 
@@ -38,6 +39,7 @@ void MemAllocator::setSize(void* ptr, unsigned int size) {
 	}
 
 	*(unsigned int*)ptr = size;
+	*(unsigned int*)((char*)ptr + sizeof(unsigned int) + size) = size;
 }
 
 void MemAllocator::setAllocated(void* ptr, char isAllocated) {
@@ -45,18 +47,22 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 		return;
 	}
 
-	int chunkSize = *(int*)ptr;
+	unsigned int chunkSize = *(unsigned int*)ptr;
 
 	if (isAllocated) {
-		*(int*)ptr |= (1 << 31);
-		*(int*)((char*)ptr + sizeof(int) + chunkSize) |= (1 << 31);
+		*(unsigned int*)ptr |= (1 << 31);
+		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) |= (1 << 31);
 	}
 	else {
-		*(int*)ptr |= 0;
-		*(int*)((char*)ptr + sizeof(int) + chunkSize) |= 0;
+		*(unsigned int*)ptr |= 0;
+		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) |= 0;
 	}
 }
 
-unsigned int MemAllocator::getSize(void* ptr) {
-	return  (*(int*)ptr & ~(1 << 31));
+void MemAllocator::mergeChunks(void* l, void* r) {
+
+}
+
+unsigned int MemAllocator::chunkSize(void* ptr) {
+	return (*(unsigned int*)ptr & ~(1 << 31));
 }
