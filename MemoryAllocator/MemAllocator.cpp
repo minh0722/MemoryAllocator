@@ -46,10 +46,10 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 	}
 
 	if (isAllocated) {
-		*(char*)ptr |= (1 << 7);
+		*(int*)ptr |= (1 << 31);
 	}
 	else {
-		*(char*)ptr |= 0;
+		*(int*)ptr |= 0;
 	}
 }
 
