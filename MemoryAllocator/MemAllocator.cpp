@@ -49,11 +49,11 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 
 	if (isAllocated) {
 		*(int*)ptr |= (1 << 31);
-		*(int*)((char*)ptr + chunkSize) |= (1 << 31);
+		*(int*)((char*)ptr + sizeof(int) + chunkSize) |= (1 << 31);
 	}
 	else {
 		*(int*)ptr |= 0;
-		*(int*)((char*)ptr + chunkSize) |= 0;
+		*(int*)((char*)ptr + sizeof(int) + chunkSize) |= 0;
 	}
 }
 
