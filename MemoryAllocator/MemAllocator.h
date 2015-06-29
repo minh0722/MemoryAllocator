@@ -16,7 +16,7 @@ private:
 	void setAllocated(void* ptr, char isAllocated = 1);
 
 	/* merge free chunks together
-	* l and r must points to valid address (the one that has )
+	* l and r must points to valid address (must point to a valid headert )
 	*/
 	void mergeChunks(void* l, void* r);
 

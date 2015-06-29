@@ -41,8 +41,15 @@ void MemAllocator::setSize(void* ptr, unsigned int size) {
 }
 
 void MemAllocator::setAllocated(void* ptr, char isAllocated) {
-	if (isAllocated && ptr) {
+	if (!ptr){
+		return;
+	}
+
+	if (isAllocated) {
 		*(char*)ptr |= (1 << 7);
+	}
+	else {
+		*(char*)ptr |= 0;
 	}
 }
 

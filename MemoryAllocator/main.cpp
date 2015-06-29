@@ -26,6 +26,10 @@ int main(){
 	bitset<32> y(*(int*)ptr);
 	cout << y << " " << (*(int*)ptr & ~(1 << 31) )<< endl;
 
+	char q = *(char*)((char*)ptr+3);
+	bitset<8> s(q);
+	cout << s << endl;
+
 	VirtualFree(ptr, 100, MEM_RELEASE);
 
 	std::cin.get();
