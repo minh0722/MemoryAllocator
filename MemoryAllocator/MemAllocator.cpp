@@ -23,6 +23,22 @@ MemAllocator::~MemAllocator() {
 
 void* MemAllocator::MyMalloc(size_t size) {
 
+	bool done = false;
+	char* currentPos = (char*)memoryPool;
+	char* poolEnd = (char*)memoryPool + poolSize;
+
+	for (;; currentPos += chunkSize(currentPos) + 2*sizeof(unsigned int) - 1) {
+		if (!isAllocated(currentPos)) {
+			int a;
+			a = 4;
+			//setAllocated(currentPos, 1);
+		}
+
+		if (currentPos + 2 * sizeof(unsigned int) + chunkSize(currentPos) == poolEnd) {
+			break;
+		}
+	}
+
 	return NULL;
 }
 
@@ -40,7 +56,7 @@ void MemAllocator::setSize(void* ptr, unsigned int size) {
 	}
 
 	*(unsigned int*)ptr = size;
-	*(unsigned int*)((char*)ptr + sizeof(unsigned int) + size) = size;
+	*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + size - 1) = size;
 }
 
 void MemAllocator::setAllocated(void* ptr, char isAllocated) {
@@ -52,11 +68,11 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 
 	if (isAllocated) {
 		*(unsigned int*)ptr |= (1 << 31);
-		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) |= (1 << 31);
+		*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + chunkSize - 1) |= (1 << 31);
 	}
 	else {
-		*(unsigned int*)ptr &= 0;
-		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) &= 0;
+		*(unsigned int*)ptr &= ~(1 << 31);
+		*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + chunkSize - 1) &= ~(1 << 31);
 	}
 }
 
