@@ -1,46 +1,50 @@
 #include <iostream>
 #include <Windows.h>
 #include <bitset>
+#include "MemAllocator.h"
 
 using namespace std;
 
 int main(){
 
-	void* ptr = VirtualAlloc(NULL, 100, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	//void* ptr = VirtualAlloc(NULL, 100, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
-	//cout << (int)(char*)ptr << endl;
-	
-	//check if address is multiple of 8
-	if ((int)(char*)ptr % 8 == 0) {
-		//cout << "aligned" << endl;
-	}
+	////cout << (int)(char*)ptr << endl;
+	//
+	////check if address is multiple of 8
+	//if ((int)(char*)ptr % 8 == 0) {
+	//	//cout << "aligned" << endl;
+	//}
 
-	*(int*)ptr = ~(1 << 31);
-	*(int*)ptr /= 2;
-	bitset<32> x(*(int*)ptr);
+	//*(int*)ptr = ~(1 << 31);
+	//*(int*)ptr /= 2;
+	//bitset<32> x(*(int*)ptr);
 
-	cout << x << " " << (*(int*)ptr & ~(1 << 31) ) << endl;
+	//cout << x << " " << (*(int*)ptr & ~(1 << 31) ) << endl;
 
-	*(int*)ptr |= (1 << 31);
+	//*(int*)ptr |= (1 << 31);
 
-	bitset<32> y(*(int*)ptr);
-	cout << y << " " << (*(int*)ptr & ~(1 << 31) )<< endl;
+	//bitset<32> y(*(int*)ptr);
+	//cout << y << " " << (*(int*)ptr & ~(1 << 31) )<< endl;
 
-	char q = *(char*)((char*)ptr+3);
-	bitset<8> s(q);
-	cout << s << endl;
+	//char q = *(char*)((char*)ptr+3);
+	//bitset<8> s(q);
+	//cout << s << endl;
 
-	char* p = (char*)ptr;
-	p += 1;
-	*(short*)p = 0;
-	bitset<16> e(*p);
-	cout << e << endl;
+	//char* p = (char*)ptr;
+	//p += 1;
+	//*(short*)p = 0;
+	//bitset<16> e(*p);
+	//cout << e << endl;
 
-	bitset<32> t(*(int*)ptr);
-	cout << t << endl;
+	//bitset<32> t(*(int*)ptr);
+	//cout << t << endl;
 
 
-	VirtualFree(ptr, 100, MEM_RELEASE);
+	//VirtualFree(ptr, 100, MEM_RELEASE);
+
+	MemAllocator m;
+	m.MyMalloc(10);
 
 	std::cin.get();
 	return 0;

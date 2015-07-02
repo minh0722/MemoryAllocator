@@ -22,6 +22,7 @@ MemAllocator::~MemAllocator() {
 }
 
 void* MemAllocator::MyMalloc(size_t size) {
+
 	return NULL;
 }
 
@@ -54,15 +55,24 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) |= (1 << 31);
 	}
 	else {
-		*(unsigned int*)ptr |= 0;
-		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) |= 0;
+		*(unsigned int*)ptr &= 0;
+		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize) &= 0;
 	}
 }
 
 void MemAllocator::mergeChunks(void* l, void* r) {
+	if (!l || !r) {
+		return;
+	}
 
+	setSize(l, chunkSize(l) + chunkSize(r));
+	setAllocated(l, 0);
 }
 
 unsigned int MemAllocator::chunkSize(void* ptr) {
 	return (*(unsigned int*)ptr & ~(1 << 31));
+}
+
+bool MemAllocator::isAllocated(void* ptr) {
+	return (*(unsigned int*)ptr & (1 << 31));
 }
