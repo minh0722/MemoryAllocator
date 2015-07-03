@@ -4,7 +4,7 @@
 #define CHUNK_MAX_SIZE ~(1 << 31)
 
 MemAllocator::MemAllocator() {
-	poolSize = 10 * 1024;
+	poolSize = 100;
 
 	memoryPool = VirtualAlloc(NULL, poolSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
@@ -23,18 +23,29 @@ MemAllocator::~MemAllocator() {
 
 void* MemAllocator::MyMalloc(size_t size) {
 
+	if (size > CHUNK_MAX_SIZE) {
+		return NULL;
+	}
+
 	bool done = false;
 	char* currentPos = (char*)memoryPool;
-	char* poolEnd = (char*)memoryPool + poolSize;
+	char* poolEnd = (char*)memoryPool + poolSize - 1;
 
-	for (;; currentPos += chunkSize(currentPos) + 2*sizeof(unsigned int) - 1) {
-		if (!isAllocated(currentPos)) {
-			int a;
-			a = 4;
-			//setAllocated(currentPos, 1);
+	for (;; currentPos += chunkSize(currentPos) + 2*sizeof(unsigned int)) {
+		if (!isAllocated(currentPos) && chunkSize(currentPos) >= size) {
+
+			if (chunkSize(currentPos) != size) {
+				setSize(currentPos + 2 * sizeof(unsigned int) + size, chunkSize(currentPos) - size - 2 * sizeof(unsigned int));
+				setAllocated(currentPos + 2 * sizeof(unsigned int) + size, 0);
+			}
+
+			setSize(currentPos, size);
+			setAllocated(currentPos, 1);
+			
+			return currentPos + sizeof(unsigned int);
 		}
 
-		if (currentPos + 2 * sizeof(unsigned int) + chunkSize(currentPos) == poolEnd) {
+		if (currentPos + 2 * sizeof(unsigned int) + chunkSize(currentPos) - 1 == poolEnd) {
 			break;
 		}
 	}
@@ -56,7 +67,7 @@ void MemAllocator::setSize(void* ptr, unsigned int size) {
 	}
 
 	*(unsigned int*)ptr = size;
-	*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + size - 1) = size;
+	*(unsigned int*)((char*)ptr + sizeof(unsigned int) + size - 1) = size;
 }
 
 void MemAllocator::setAllocated(void* ptr, char isAllocated) {
@@ -68,11 +79,11 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 
 	if (isAllocated) {
 		*(unsigned int*)ptr |= (1 << 31);
-		*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + chunkSize - 1) |= (1 << 31);
+		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize - 1) |= (1 << 31);
 	}
 	else {
 		*(unsigned int*)ptr &= ~(1 << 31);
-		*(unsigned int*)((char*)ptr + 2*sizeof(unsigned int) + chunkSize - 1) &= ~(1 << 31);
+		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize - 1) &= ~(1 << 31);
 	}
 }
 

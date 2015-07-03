@@ -44,7 +44,9 @@ int main(){
 	//VirtualFree(ptr, 100, MEM_RELEASE);
 
 	MemAllocator m;
-	m.MyMalloc(10);
+	char* ptr = (char*)m.MyMalloc(10);
+	char* ptr1 = (char*)m.MyMalloc(74);
+	char* ptr2 = (char*)m.MyMalloc(3);
 
 	std::cin.get();
 	return 0;
