@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Windows.h>
 #define CHUNK_MAX_SIZE ~(1 << 31)
+#define HEADER_SIZE sizeof(unsigned int)
 
 MemAllocator::MemAllocator() {
 	poolSize = 100;
@@ -12,7 +13,7 @@ MemAllocator::MemAllocator() {
 		throw std::exception("Failed to allocate memory");
 	}
 
-	setSize(memoryPool, poolSize - 2 * sizeof(unsigned int));
+	setSize(memoryPool, poolSize - 2 * HEADER_SIZE);
 	setAllocated(memoryPool, 0);
 
 }
@@ -31,21 +32,21 @@ void* MemAllocator::MyMalloc(size_t size) {
 	char* currentPos = (char*)memoryPool;
 	char* poolEnd = (char*)memoryPool + poolSize - 1;
 
-	for (;; currentPos += chunkSize(currentPos) + 2*sizeof(unsigned int)) {
+	for (;; currentPos += chunkSize(currentPos) + 2 * HEADER_SIZE) {
 		if (!isAllocated(currentPos) && chunkSize(currentPos) >= size) {
 
 			if (chunkSize(currentPos) != size) {
-				setSize(currentPos + 2 * sizeof(unsigned int) + size, chunkSize(currentPos) - size - 2 * sizeof(unsigned int));
-				setAllocated(currentPos + 2 * sizeof(unsigned int) + size, 0);
+				setSize(currentPos + 2 * HEADER_SIZE + size, chunkSize(currentPos) - size - 2 * HEADER_SIZE);
+				setAllocated(currentPos + 2 * HEADER_SIZE + size, 0);
 			}
 
 			setSize(currentPos, size);
 			setAllocated(currentPos, 1);
 			
-			return currentPos + sizeof(unsigned int);
+			return currentPos + HEADER_SIZE;
 		}
 
-		if (currentPos + 2 * sizeof(unsigned int) + chunkSize(currentPos) - 1 == poolEnd) {
+		if (currentPos + 2 * HEADER_SIZE + chunkSize(currentPos) - 1 == poolEnd) {
 			break;
 		}
 	}
@@ -54,7 +55,26 @@ void* MemAllocator::MyMalloc(size_t size) {
 }
 
 void MemAllocator::MyFree(void* ptr) {
+		char* poolEnd = (char*)memoryPool + poolSize - 1;
+	unsigned int thisChunkSize = chunkSize((char*)ptr - HEADER_SIZE);
 
+	char* thisChunkHeader = (char*)ptr - HEADER_SIZE;
+	char* rightChunkHeader = (char*)ptr + thisChunkSize + HEADER_SIZE;
+	char* leftChunkHeader = (char*)ptr - 2 * HEADER_SIZE - chunkSize((char*)ptr - 2 * HEADER_SIZE) - HEADER_SIZE;
+
+	setAllocated(thisChunkHeader, 0);
+
+	//merge if there is right chunk and if it's free
+	if ((char*)ptr + thisChunkSize + HEADER_SIZE - 1 != poolEnd && !isAllocated(rightChunkHeader)) {
+		//char* rightChunkHeader = (char*)ptr + thisChunkSize + HEADER_SIZE;
+		mergeChunks(thisChunkHeader, rightChunkHeader);
+	}
+
+	//merge if there is left chunk and it's free
+	if ((char*)ptr - HEADER_SIZE != memoryPool && !isAllocated(leftChunkHeader)) {
+		//char* leftChunkHeader = (char*)ptr - 2 * HEADER_SIZE - chunkSize((char*)ptr - 2 * HEADER_SIZE) - HEADER_SIZE;
+		mergeChunks(leftChunkHeader, thisChunkHeader);
+	}
 }
 
 void MemAllocator::setSize(void* ptr, unsigned int size) {
@@ -67,7 +87,7 @@ void MemAllocator::setSize(void* ptr, unsigned int size) {
 	}
 
 	*(unsigned int*)ptr = size;
-	*(unsigned int*)((char*)ptr + sizeof(unsigned int) + size - 1) = size;
+	*(unsigned int*)((char*)ptr + HEADER_SIZE + size) = size;
 }
 
 void MemAllocator::setAllocated(void* ptr, char isAllocated) {
@@ -75,15 +95,15 @@ void MemAllocator::setAllocated(void* ptr, char isAllocated) {
 		return;
 	}
 
-	unsigned int chunkSize = *(unsigned int*)ptr;
+	unsigned int size = chunkSize(ptr);
 
 	if (isAllocated) {
 		*(unsigned int*)ptr |= (1 << 31);
-		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize - 1) |= (1 << 31);
+		*(unsigned int*)((char*)ptr + HEADER_SIZE + size ) |= (1 << 31);
 	}
 	else {
 		*(unsigned int*)ptr &= ~(1 << 31);
-		*(unsigned int*)((char*)ptr + sizeof(unsigned int) + chunkSize - 1) &= ~(1 << 31);
+		*(unsigned int*)((char*)ptr + HEADER_SIZE + size ) &= ~(1 << 31);
 	}
 }
 
@@ -92,7 +112,7 @@ void MemAllocator::mergeChunks(void* l, void* r) {
 		return;
 	}
 
-	setSize(l, chunkSize(l) + chunkSize(r));
+	setSize(l, chunkSize(l) + chunkSize(r) + 2 * HEADER_SIZE);
 	setAllocated(l, 0);
 }
 
