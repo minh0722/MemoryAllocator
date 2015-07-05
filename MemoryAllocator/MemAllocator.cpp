@@ -25,12 +25,12 @@ MemAllocator::MemAllocator() {
 }
 
 MemAllocator::~MemAllocator() {
-	VirtualFree(memoryPool, poolSize, MEM_RELEASE);
+	freePool(memoryPool);	
 }
 
 void* MemAllocator::MyMalloc(size_t size) {
 
-	if (size > CHUNK_MAX_SIZE) {
+	if (size > CHUNK_MAX_SIZE || size == 0) {
 		return NULL;
 	}
 
@@ -71,7 +71,6 @@ void* MemAllocator::MyMalloc(size_t size) {
 }
 
 void MemAllocator::MyFree(void* ptr) {
-	//char* poolEnd = (char*)memoryPool + poolSize - 1;
 	char* poolEnd = findPoolEnd(ptr);
 	char* start = findPoolStart(ptr);
 
@@ -203,4 +202,13 @@ char* MemAllocator::findPoolStart(void* ptr) {
 	}
 
 	return NULL;
+}
+
+void MemAllocator::freePool(void* ptr) {
+
+	if (heapHeader(ptr)->nextHeapHeader) {
+		freePool((char*)(heapHeader(ptr)->nextHeapHeader));
+	}
+
+	VirtualFree(ptr, poolSize, MEM_RELEASE);
 }

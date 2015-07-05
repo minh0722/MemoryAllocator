@@ -5,8 +5,6 @@
 
 using namespace std;
 
-
-
 int main(){
 
 	MemAllocator m;
@@ -18,8 +16,8 @@ int main(){
 	m.MyFree(ptr1);
 	m.MyFree(ptr2);
 
-	//char* ptr3 = (char*)m.MyMalloc(20);
-	//m.MyFree(ptr3);
+	char* ptr3 = (char*)m.MyMalloc(20);
+	m.MyFree(ptr3);
 
 
 	std::cin.get();

@@ -32,6 +32,7 @@ private:
 	void mergeChunks(void* l, void* r);
 
 	/* return size of the chunk
+	* must point to valid header
 	*/
 	unsigned int chunkSize(void* ptr);
 
@@ -57,6 +58,10 @@ private:
 	/* finds first byte in the pool that contains ptr
 	*/
 	char* findPoolStart(void* ptr);
+
+	/* free the pool and all pool after it
+	*/
+	void freePool(void* ptr);
 
 	void* memoryPool;
 	void* poolStart;
