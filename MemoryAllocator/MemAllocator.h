@@ -1,4 +1,11 @@
 #pragma once
+#include <iostream>
+
+struct HeapHeader{
+	HeapHeader() : nextHeap(NULL), prevHeap(NULL){}
+	char* nextHeap, *prevHeap;
+};
+
 class MemAllocator {
 public:
 	MemAllocator();
@@ -31,6 +38,7 @@ private:
 	bool isAllocated(void* ptr);
 
 	void* memoryPool;
+	void* poolStart;
 	size_t poolSize;
 };
 

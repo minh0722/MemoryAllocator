@@ -1,20 +1,26 @@
 #include "MemAllocator.h"
-#include <iostream>
 #include <Windows.h>
 #define CHUNK_MAX_SIZE ~(1 << 31)
 #define HEADER_SIZE sizeof(unsigned int)
+#define HEAP_HEADER_SIZE sizeof(HeapHeader)
 
 MemAllocator::MemAllocator() {
 	poolSize = 100;
 
 	memoryPool = VirtualAlloc(NULL, poolSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
+
 	if (!memoryPool) {
 		throw std::exception("Failed to allocate memory");
 	}
 
-	setSize(memoryPool, poolSize - 2 * HEADER_SIZE);
-	setAllocated(memoryPool, 0);
+	HeapHeader h;
+	memcpy(memoryPool, &h, sizeof(HeapHeader));
+
+	poolStart = (char*)memoryPool + sizeof(HeapHeader);
+
+	setSize(poolStart, poolSize - 2 * HEADER_SIZE - HEAP_HEADER_SIZE);
+	setAllocated(poolStart, 0);
 
 }
 
@@ -29,7 +35,7 @@ void* MemAllocator::MyMalloc(size_t size) {
 	}
 
 	bool done = false;
-	char* currentPos = (char*)memoryPool;
+	char* currentPos = (char*)poolStart;
 	char* poolEnd = (char*)memoryPool + poolSize - 1;
 
 	for (;; currentPos += chunkSize(currentPos) + 2 * HEADER_SIZE) {
@@ -55,7 +61,7 @@ void* MemAllocator::MyMalloc(size_t size) {
 }
 
 void MemAllocator::MyFree(void* ptr) {
-		char* poolEnd = (char*)memoryPool + poolSize - 1;
+	char* poolEnd = (char*)memoryPool + poolSize - 1;
 	unsigned int thisChunkSize = chunkSize((char*)ptr - HEADER_SIZE);
 
 	char* thisChunkHeader = (char*)ptr - HEADER_SIZE;
@@ -66,13 +72,11 @@ void MemAllocator::MyFree(void* ptr) {
 
 	//merge if there is right chunk and if it's free
 	if ((char*)ptr + thisChunkSize + HEADER_SIZE - 1 != poolEnd && !isAllocated(rightChunkHeader)) {
-		//char* rightChunkHeader = (char*)ptr + thisChunkSize + HEADER_SIZE;
 		mergeChunks(thisChunkHeader, rightChunkHeader);
 	}
 
 	//merge if there is left chunk and it's free
-	if ((char*)ptr - HEADER_SIZE != memoryPool && !isAllocated(leftChunkHeader)) {
-		//char* leftChunkHeader = (char*)ptr - 2 * HEADER_SIZE - chunkSize((char*)ptr - 2 * HEADER_SIZE) - HEADER_SIZE;
+	if ((char*)ptr - HEADER_SIZE != poolStart && !isAllocated(leftChunkHeader)) {
 		mergeChunks(leftChunkHeader, thisChunkHeader);
 	}
 }
@@ -80,10 +84,6 @@ void MemAllocator::MyFree(void* ptr) {
 void MemAllocator::setSize(void* ptr, unsigned int size) {
 	if (!ptr) {
 		return;
-	}
-
-	if (size > CHUNK_MAX_SIZE) {
-		throw std::exception("Chunk size is too big!");
 	}
 
 	*(unsigned int*)ptr = size;
