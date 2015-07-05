@@ -2,8 +2,8 @@
 #include <iostream>
 
 struct HeapHeader{
-	HeapHeader() : nextHeap(NULL), prevHeap(NULL){}
-	char* nextHeap, *prevHeap;
+	HeapHeader() : nextHeapHeader(NULL), prevHeapHeader(NULL){}
+	HeapHeader* nextHeapHeader, *prevHeapHeader;
 };
 
 class MemAllocator {
@@ -16,6 +16,9 @@ public:
 	void MyFree(void* ptr);
 
 private:
+
+	void* findFreeChunk(char* poolStart, char* poolEnd, size_t size);
+
 	/* set size of the chunk
 	*/
 	void setSize(void* ptr, unsigned int size);
@@ -37,9 +40,23 @@ private:
 	*/
 	bool isAllocated(void* ptr);
 
-	HeapHeader* thisHeapHeader() const;
+	/* return heap header of pool
+	* poolStart must point to first byte of pool
+	*/
+	HeapHeader* heapHeader(void* poolStart) const;
 
-	char* nextHeap() const;
+	/* return heap header of next pool of poolStart
+	* poolStart must point to first byte of pool
+	*/
+	HeapHeader* nextHeapHeader(void* poolStart) const;
+
+	/* finds last byte in the pool that contains ptr
+	*/
+	char* findPoolEnd(void* ptr);
+
+	/* finds first byte in the pool that contains ptr
+	*/
+	char* findPoolStart(void* ptr);
 
 	void* memoryPool;
 	void* poolStart;
