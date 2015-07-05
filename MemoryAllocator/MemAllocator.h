@@ -37,6 +37,10 @@ private:
 	*/
 	bool isAllocated(void* ptr);
 
+	HeapHeader* thisHeapHeader() const;
+
+	char* nextHeap() const;
+
 	void* memoryPool;
 	void* poolStart;
 	size_t poolSize;

@@ -123,3 +123,11 @@ unsigned int MemAllocator::chunkSize(void* ptr) {
 bool MemAllocator::isAllocated(void* ptr) {
 	return (*(unsigned int*)ptr & (1 << 31));
 }
+
+HeapHeader* MemAllocator::thisHeapHeader() const {
+	return (HeapHeader*)memoryPool;
+}
+
+char* MemAllocator::nextHeap() const {
+	return thisHeapHeader()->nextHeap;
+}
