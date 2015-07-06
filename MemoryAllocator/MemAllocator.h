@@ -32,22 +32,22 @@ private:
 	void mergeChunks(void* l, void* r);
 
 	/* return size of the chunk
-	* must point to valid header
+	*  must point to valid header
 	*/
 	unsigned int chunkSize(void* ptr);
 
 	/* check if chunk is allocated
-	* must point to valid header
+	*  must point to valid header
 	*/
 	bool isAllocated(void* ptr);
 
 	/* return heap header of pool
-	* poolStart must point to first byte of pool
+	*  poolStart must point to first byte of pool
 	*/
 	HeapHeader* heapHeader(void* poolStart) const;
 
 	/* return heap header of next pool of poolStart
-	* poolStart must point to first byte of pool
+	*  poolStart must point to first byte of pool
 	*/
 	HeapHeader* nextHeapHeader(void* poolStart) const;
 
@@ -62,6 +62,11 @@ private:
 	/* free the pool and all pool after it
 	*/
 	void freePool(void* ptr);
+
+	/* find offset bytes
+	*  must point to valid header
+	*/
+	unsigned int offsetCount(void* ptr);
 
 	void* memoryPool;
 	void* poolStart;

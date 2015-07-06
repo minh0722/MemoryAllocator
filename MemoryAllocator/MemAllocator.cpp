@@ -3,6 +3,7 @@
 #define CHUNK_MAX_SIZE ~(1 << 31)
 #define HEADER_SIZE sizeof(unsigned int)
 #define HEAP_HEADER_SIZE sizeof(HeapHeader)
+#define ALIGNMENT  8
 
 MemAllocator::MemAllocator() {
 	poolSize = 100;
@@ -211,4 +212,10 @@ void MemAllocator::freePool(void* ptr) {
 	}
 
 	VirtualFree(ptr, poolSize, MEM_RELEASE);
+}
+
+
+unsigned int MemAllocator::offsetCount(void* ptr) {
+	char* chunkLastByte = (char*)ptr + HEADER_SIZE + chunkSize(ptr) + HEADER_SIZE - 1;
+	return (unsigned int)chunkLastByte % ALIGNMENT;
 }
